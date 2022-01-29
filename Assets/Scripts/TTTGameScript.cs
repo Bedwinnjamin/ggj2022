@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class TTTGameScript : MonoBehaviour
+public class TTTGameScript : NetworkBehavior
 {
+    [SyncVar]
     private int[,] tttBoard = new int[3, 3] {
         {0,0,0},
         {0,0,0},
@@ -17,34 +19,40 @@ public class TTTGameScript : MonoBehaviour
         CheckForWin();
     }
 
-    void CheckForWin() 
+    void CheckForWin()
     {
         //TODO: Actually serve the win
 
         //Horizontal Wins
-        for (int i = 0; i < 3; i++) {
-            if (tttBoard[i,0] == tttBoard[i,1] && tttBoard[i,1] == tttBoard[i,2] && tttBoard[i,0] != 0)
+        for (int i = 0; i < 3; i++)
+        {
+            if (tttBoard[i, 0] == tttBoard[i, 1] && tttBoard[i, 1] == tttBoard[i, 2] && tttBoard[i, 0] != 0)
             {
-                Debug.Log(tttBoard[i,0] + "Wins!");
+                Debug.Log(tttBoard[i, 0] + "Wins!");
+                ResetGame();
             }
         }
 
         //Vertical Wins
-        for (int i = 0; i < 3; i++) {
-            if (tttBoard[0,i] == tttBoard[1,i] && tttBoard[1,i] == tttBoard[2,i] && tttBoard[0,i] != 0)
+        for (int i = 0; i < 3; i++)
+        {
+            if (tttBoard[0, i] == tttBoard[1, i] && tttBoard[1, i] == tttBoard[2, i] && tttBoard[0, i] != 0)
             {
-                Debug.Log(tttBoard[0,i] + "Wins!");
+                Debug.Log(tttBoard[0, i] + "Wins!");
+                ResetGame();
             }
         }
 
         //Diagonal Wins
-        if (tttBoard[0,0] == tttBoard[1,1] && tttBoard[1,1] == tttBoard[2,2] && tttBoard[0,0] != 0)
+        if (tttBoard[0, 0] == tttBoard[1, 1] && tttBoard[1, 1] == tttBoard[2, 2] && tttBoard[0, 0] != 0)
         {
-            Debug.Log(tttBoard[0,0] + "Wins!");
+            Debug.Log(tttBoard[0, 0] + "Wins!");
+            ResetGame();
         }
-        else if (tttBoard[0,2] == tttBoard[1,1] && tttBoard[1,1] == tttBoard[2,0] && tttBoard[0,2] != 0)
+        else if (tttBoard[0, 2] == tttBoard[1, 1] && tttBoard[1, 1] == tttBoard[2, 0] && tttBoard[0, 2] != 0)
         {
-            Debug.Log(tttBoard[0,2] + "Wins!");
+            Debug.Log(tttBoard[0, 2] + "Wins!");
+            ResetGame();
         }
     }
 
@@ -56,7 +64,7 @@ public class TTTGameScript : MonoBehaviour
         {
             for (int j = 0; j < 3; j++)
             {
-                if (tttBoard[i,j] == 0)
+                if (tttBoard[i, j] == 0)
                 {
                     spaceRemaining = true;
                 }
@@ -68,14 +76,21 @@ public class TTTGameScript : MonoBehaviour
 
     void ResetGame()
     {
-        GameObject[] squares = GameObject.FindGameObjectsWithTag("square");
+        StartCoroutine(DelayedReset());
+    }
+
+    IEnumerator DelayedReset()
+    {
+        yield return new WaitForSeconds(2);
+
+        GameObject[] squares = GameObject.FindGameObjectsWithTag("space");
 
         foreach (GameObject square in squares)
         {
             square.GetComponent<SpaceScript>().ResetSquare();
         }
 
-        tttBoard = new int[3,3] {
+        tttBoard = new int[3, 3] {
             {0,0,0},
             {0,0,0},
             {0,0,0}

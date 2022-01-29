@@ -4,47 +4,95 @@ using UnityEngine;
 
 public class LetterManager : MonoBehaviour
 {
-    public TextMesh textMesh;
+    //public TextMesh textMesh;
     public Color LetterColor;
 
-    public bool insideSpace = false;
     public GameObject space = null;
+
+    public GameObject letterSprite;
+    public SpriteRenderer letterRenderer;
+
+    public Sprite blueX;
+    public Sprite blueO;
+    public Sprite redX;
+    public Sprite redO;
+
+    public bool playerIsRed;  //TODO: Set this automatically
 
     private Color originalColor;
 
-    private static string[] possibleLetters = {"X", "O"};
+    private string currentLetter;
+
+    public int insideSquareCount;
+
+    private static string[] possibleLetters = { "X", "O" };
 
     // Start is called before the first frame update
     void Start()
     {
-        textMesh.color = LetterColor;
-        textMesh.text = possibleLetters[Random.Range(0,2)];
-        originalColor = LetterColor;
+        letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
+
+        //textMesh.color = LetterColor;
+        currentLetter = possibleLetters[Random.Range(0, 2)];
+        Debug.Log(currentLetter);
+        SwitchSprite();
     }
 
     void SwitchLetter()
     {
-        textMesh.text = (textMesh.text == "X") ? "O" : "X";
+        currentLetter = (currentLetter == "X") ? "O" : "X";
+        Debug.Log(currentLetter);
+        SwitchSprite();
+        //textMesh.text = (textMesh.text == "X") ? "O" : "X";
+    }
+
+    void SwitchSprite()
+    {
+        if (playerIsRed)
+        {
+            if (currentLetter == "X")
+            {
+                letterRenderer.sprite = redX;
+            }
+            else
+            {
+                letterRenderer.sprite = redO;
+            }
+        }
+        else
+        {
+            if (currentLetter == "X")
+            {
+                letterRenderer.sprite = blueX;
+            }
+            else
+            {
+                letterRenderer.sprite = blueO;
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown("space"))
+        if (isLocalPlayer)
         {
-            SwitchLetter();
-        }
-        if (Input.GetKeyDown("f") && insideSpace)
-        {
-            if (space.GetComponent<SpaceScript>().isFree())
+            if (Input.GetKeyDown("space"))
             {
-                int playerID = (textMesh.text == "X") ? 1 : 2;
+                SwitchLetter();
+            }
+            if (Input.GetKeyDown("f") && insideSquareCount > 0)
+            {
+                if (space.GetComponent<SpaceScript>().isFree())
+                {
+                    int playerID = (currentLetter == "X") ? 1 : 2;
 
-                space.GetComponent<SpaceScript>().ClaimSquare(playerID);
+                    space.GetComponent<SpaceScript>().ClaimSquare(playerID);
 
-                Debug.Log("Placed Your Letter!");
+                    Debug.Log("Placed Your Letter!");
 
-                //TODO: Respawn the player
+                    //TODO: Respawn the player
+                }
             }
         }
     }
@@ -52,28 +100,28 @@ public class LetterManager : MonoBehaviour
     public void OfferClaim()
     {
         //TODO: Show that the space is claimable
-        Debug.Log("Can claim this spot!");
-        textMesh.color = Color.yellow;
+        //textMesh.color = Color.yellow;
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "space")
         {
-            insideSpace = true;
             space = other.gameObject;
-            Debug.Log("Entering Square");
+            insideSquareCount++;
+
+            //TODO: Highlight the square that you are occupying
+            //TODO: Remove your highlight from other squares
         }
     }
 
-    void OnTriggerExit(Collider other)
+    void OnTriggerExit2D(Collider2D other)
     {
         if (other.tag == "space")
         {
-            insideSpace = false;
-            // Do we need to clear the space here?
-            textMesh.color = originalColor;
+            //textMesh.color = originalColor;
             Debug.Log("Leaving Square");
+            insideSquareCount--;
         }
     }
 }

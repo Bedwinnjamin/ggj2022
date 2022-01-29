@@ -7,14 +7,22 @@ public class SpaceScript : MonoBehaviour
     public int x;
     public int y;
 
+    public Sprite xSprite;
+    public Sprite oSprite;
+
     bool free = true;
 
-    void OnTriggerEnter(Collider collider)
+    void OnTriggerEnter2D(Collider2D collider)
     {
-        Debug.Log(x.ToString() + "," + y.ToString());
         if (free)
         {
+            Debug.Log(x.ToString() + "," + y.ToString() + " [CAN CLAIM]");
             collider.gameObject.GetComponent<LetterManager>().OfferClaim();
+        }
+        else
+        {
+            Debug.Log(x.ToString() + "," + y.ToString());
+
         }
     }
 
@@ -22,6 +30,17 @@ public class SpaceScript : MonoBehaviour
     {
         //TODO: Change sprite
         free = false;
+
+        if (playerID == 1)
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = xSprite;
+        }
+        else
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = oSprite;
+
+        }
+
         GameObject.Find("TTTGrid").GetComponent<TTTGameScript>().ClaimSquare(x, y, playerID);
     }
 
@@ -32,7 +51,7 @@ public class SpaceScript : MonoBehaviour
 
     public void ResetSquare() 
     {
-        //TODO: Change sprite
+        gameObject.GetComponent<SpriteRenderer>().sprite = null;
         free = true;
     }
 }
