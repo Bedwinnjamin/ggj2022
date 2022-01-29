@@ -33,6 +33,6 @@ public class LetterManager : MonoBehaviour
     public void OfferClaim()
     {
         Debug.Log("Can claim this spot!");
-        textMesh.color = new Color()
+        textMesh.color = new Color();
     }
 }
