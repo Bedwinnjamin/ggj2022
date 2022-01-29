@@ -53,7 +53,7 @@ MonoBehaviour:
   onlineScene: 
   transport: {fileID: 7045519507906425805}
   networkAddress: localhost
-  maxConnections: 100
+  maxConnections: 2
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1274804794903317078, guid: 15bae75cd5c2d1a4d9ce5bac8cb6f721, type: 3}
   autoCreatePlayer: 1
@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Port: 7777
+  Port: 9734
   DualMode: 1
   NoDelay: 1
   Interval: 10
@@ -85,7 +85,7 @@ MonoBehaviour:
   MaximizeSendReceiveBuffersToOSLimit: 1
   ReliableMaxMessageSize: 298449
   UnreliableMaxMessageSize: 1199
-  debugLog: 0
+  debugLog: 1
   statisticsGUI: 0
   statisticsLog: 0
 --- !u!114 &7045519507906425842
