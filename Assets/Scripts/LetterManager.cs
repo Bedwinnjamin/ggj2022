@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class LetterManager : MonoBehaviour
+public class LetterManager : NetworkBehaviour
 {
     //public TextMesh textMesh;
     public Color LetterColor;

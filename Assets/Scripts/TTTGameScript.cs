@@ -3,18 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class TTTGameScript : NetworkBehavior
+public class TTTGameScript : NetworkBehaviour
 {
-    [SyncVar]
-    private int[,] tttBoard = new int[3, 3] {
-        {0,0,0},
-        {0,0,0},
-        {0,0,0}
-    };
-
-    public void ClaimSquare(int x, int y, int playerID)
+    private readonly SyncList<int> tttBoard = new SyncList<int>();
+    private void resetBoard()
     {
-        tttBoard[x, y] = playerID;
+        tttBoard.Clear();
+        for (int i = 0; i < 10; i++)
+        {
+            tttBoard.Add(0);
+        }
+    }
+    public TTTGameScript()
+    {
+        resetBoard();
+    }
+
+    private int flattenCoords(int x, int y)
+    {
+        return x * 3 + y;
+    }
+
+    public void ClaimSquare(int x, int y, int marking)
+    {
+        tttBoard[flattenCoords(x, y)] = marking;
 
         CheckForWin();
     }
@@ -26,9 +38,9 @@ public class TTTGameScript : NetworkBehavior
         //Horizontal Wins
         for (int i = 0; i < 3; i++)
         {
-            if (tttBoard[i, 0] == tttBoard[i, 1] && tttBoard[i, 1] == tttBoard[i, 2] && tttBoard[i, 0] != 0)
+            if (tttBoard[flattenCoords(i, 0)] == tttBoard[flattenCoords(i, 1)] && tttBoard[flattenCoords(i, 1)] == tttBoard[flattenCoords(i, 2)] && tttBoard[flattenCoords(i, 0)] != 0)
             {
-                Debug.Log(tttBoard[i, 0] + "Wins!");
+                Debug.Log(tttBoard[flattenCoords(i, 0)] + "Wins!");
                 ResetGame();
             }
         }
@@ -36,22 +48,22 @@ public class TTTGameScript : NetworkBehavior
         //Vertical Wins
         for (int i = 0; i < 3; i++)
         {
-            if (tttBoard[0, i] == tttBoard[1, i] && tttBoard[1, i] == tttBoard[2, i] && tttBoard[0, i] != 0)
+            if (tttBoard[flattenCoords(0, i)] == tttBoard[flattenCoords(1, i)] && tttBoard[flattenCoords(1, i)] == tttBoard[flattenCoords(2, i)] && tttBoard[flattenCoords(0, i)] != 0)
             {
-                Debug.Log(tttBoard[0, i] + "Wins!");
+                Debug.Log(tttBoard[flattenCoords(0, i)] + "Wins!");
                 ResetGame();
             }
         }
 
         //Diagonal Wins
-        if (tttBoard[0, 0] == tttBoard[1, 1] && tttBoard[1, 1] == tttBoard[2, 2] && tttBoard[0, 0] != 0)
+        if (tttBoard[flattenCoords(0, 0)] == tttBoard[flattenCoords(1, 1)] && tttBoard[flattenCoords(1, 1)] == tttBoard[flattenCoords(2, 2)] && tttBoard[flattenCoords(0, 0)] != 0)
         {
-            Debug.Log(tttBoard[0, 0] + "Wins!");
+            Debug.Log(tttBoard[flattenCoords(0, 0)] + "Wins!");
             ResetGame();
         }
-        else if (tttBoard[0, 2] == tttBoard[1, 1] && tttBoard[1, 1] == tttBoard[2, 0] && tttBoard[0, 2] != 0)
+        else if (tttBoard[flattenCoords(0, 2)] == tttBoard[flattenCoords(1, 1)] && tttBoard[flattenCoords(1, 1)] == tttBoard[flattenCoords(2, 0)] && tttBoard[flattenCoords(0, 2)] != 0)
         {
-            Debug.Log(tttBoard[0, 2] + "Wins!");
+            Debug.Log(tttBoard[flattenCoords(0, 2)] + "Wins!");
             ResetGame();
         }
     }
@@ -64,7 +76,7 @@ public class TTTGameScript : NetworkBehavior
         {
             for (int j = 0; j < 3; j++)
             {
-                if (tttBoard[i, j] == 0)
+                if (tttBoard[flattenCoords(i, j)] == 0)
                 {
                     spaceRemaining = true;
                 }
@@ -90,10 +102,6 @@ public class TTTGameScript : NetworkBehavior
             square.GetComponent<SpaceScript>().ResetSquare();
         }
 
-        tttBoard = new int[3, 3] {
-            {0,0,0},
-            {0,0,0},
-            {0,0,0}
-        };
+        resetBoard();
     }
 }
