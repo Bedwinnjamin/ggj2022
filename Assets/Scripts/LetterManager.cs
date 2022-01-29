@@ -25,7 +25,7 @@ public class LetterManager : MonoBehaviour
 
     public int insideSquareCount;
 
-    private static string[] possibleLetters = {"X", "O"};
+    private static string[] possibleLetters = { "X", "O" };
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +33,7 @@ public class LetterManager : MonoBehaviour
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
 
         //textMesh.color = LetterColor;
-        currentLetter = possibleLetters[Random.Range(0,2)];
+        currentLetter = possibleLetters[Random.Range(0, 2)];
         Debug.Log(currentLetter);
         SwitchSprite();
     }
@@ -75,21 +75,24 @@ public class LetterManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown("space"))
+        if (isLocalPlayer)
         {
-            SwitchLetter();
-        }
-        if (Input.GetKeyDown("f") && insideSquareCount > 0)
-        {
-            if (space.GetComponent<SpaceScript>().isFree())
+            if (Input.GetKeyDown("space"))
             {
-                int playerID = (currentLetter == "X") ? 1 : 2;
+                SwitchLetter();
+            }
+            if (Input.GetKeyDown("f") && insideSquareCount > 0)
+            {
+                if (space.GetComponent<SpaceScript>().isFree())
+                {
+                    int playerID = (currentLetter == "X") ? 1 : 2;
 
-                space.GetComponent<SpaceScript>().ClaimSquare(playerID);
+                    space.GetComponent<SpaceScript>().ClaimSquare(playerID);
 
-                Debug.Log("Placed Your Letter!");
+                    Debug.Log("Placed Your Letter!");
 
-                //TODO: Respawn the player
+                    //TODO: Respawn the player
+                }
             }
         }
     }

@@ -76,6 +76,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7659535125441541728}
   - component: {fileID: 4916907583583834412}
+  - component: {fileID: 7980446247967851467}
   m_Layer: 0
   m_Name: TTTGrid
   m_TagString: Untagged
@@ -112,6 +113,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b42f3d8453b65c941a8546f6752acb66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7980446247967851467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7354193280475180356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  visible: 0
+  m_AssetId: efea260f77d1b9e44b9d2ee316b15052
+  hasSpawned: 0
 --- !u!1 &8268349332542108764
 GameObject:
   m_ObjectHideFlags: 0
