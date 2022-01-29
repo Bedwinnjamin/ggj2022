@@ -1,8 +1,9 @@
+using Mirror;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
 
     public float moveSpeed = 5f;
@@ -10,15 +11,18 @@ public class PlayerMovement : MonoBehaviour
 
     Vector2 movement;
 
-    // Update is called once per frame
-    void Update()
+    void HandleMovement()
     {
-        movement.x = Input.GetAxisRaw("Horizontal");
-        movement.y = Input.GetAxisRaw("Vertical");
+        if (isLocalPlayer)
+        {
+            movement.x = Input.GetAxis("Horizontal");
+            movement.y = Input.GetAxis("Vertical");
+        }
     }
 
     void FixedUpdate()
     {
+        HandleMovement();
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
     }
 }
