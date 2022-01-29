@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class TTTGameScript : NetworkBehavior
+public class TTTGameScript : NetworkBehaviour
 {
     [SyncVar]
     private int[,] tttBoard = new int[3, 3] {
