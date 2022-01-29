@@ -8,6 +8,8 @@ public class PlayerMovement : NetworkBehaviour
 
     public float moveSpeed = 5f;
     public Rigidbody2D rb;
+    
+    public Animator animator;
 
     Vector2 movement;
 
@@ -17,6 +19,17 @@ public class PlayerMovement : NetworkBehaviour
         {
             movement.x = Input.GetAxisRaw("Horizontal");
             movement.y = Input.GetAxisRaw("Vertical");
+            
+            
+            animator.SetFloat("Speed", movement.sqrMagnitude);
+            if(movement.x < 0)
+            {
+            	animator.SetBool("Left", true);
+            }
+            else
+            {
+            	animator.SetBool("Left", false);
+            }
         }
     }
 

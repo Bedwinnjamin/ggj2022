@@ -11,6 +11,7 @@ public class LetterManager : MonoBehaviour
 
     public GameObject letterSprite;
     public SpriteRenderer letterRenderer;
+    public Animator animator;
 
     public Sprite blueX;
     public Sprite blueO;
@@ -31,6 +32,8 @@ public class LetterManager : MonoBehaviour
     void Start()
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
+        
+        animator.runtimeAnimatorController = Resources.Load("Assets/Sprites/animations/BlueDino.controller") as RuntimeAnimatorController; 
 
         //textMesh.color = LetterColor;
         currentLetter = possibleLetters[Random.Range(0, 2)];
