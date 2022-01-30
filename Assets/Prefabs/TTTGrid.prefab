@@ -75,7 +75,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7659535125441541728}
-  - component: {fileID: 4916907583583834412}
   - component: {fileID: 7980446247967851467}
   m_Layer: 0
   m_Name: TTTGrid
@@ -101,18 +100,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4916907583583834412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7354193280475180356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b42f3d8453b65c941a8546f6752acb66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7980446247967851467
 MonoBehaviour:
   m_ObjectHideFlags: 0

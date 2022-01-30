@@ -5,15 +5,39 @@ using Mirror;
 
 public class TTTGameScript : NetworkBehaviour
 {
+
     private readonly SyncList<int> tttBoard = new SyncList<int>();
+
+    public List<GameObject> tttObjects = new List<GameObject>();
+
     private void resetBoard()
     {
         tttBoard.Clear();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 9; i++)
         {
             tttBoard.Add(0);
         }
     }
+
+    public override void OnStartClient()
+    {
+        tttBoard.Callback += OnBoardUpdated;
+    }
+
+    void OnBoardUpdated(SyncList<int>.Operation op, int index, int oldVal, int newVal)
+    {
+        switch (op)
+        {
+            case SyncList<int>.Operation.OP_ADD:
+            case SyncList<int>.Operation.OP_SET:
+                // index is of the item that was changed
+                // oldItem is the previous value for the item at the index
+                // newItem is the new value for the item at the index
+                tttObjects[index].GetComponent<SpaceScript>().State = newVal;
+                break;
+        }
+    }
+
     public TTTGameScript()
     {
         resetBoard();
@@ -21,9 +45,10 @@ public class TTTGameScript : NetworkBehaviour
 
     private int flattenCoords(int x, int y)
     {
-        return x * 3 + y;
+        return y * 3 + x;
     }
 
+    [Command(requiresAuthority = false)]
     public void ClaimSquare(int x, int y, int marking)
     {
         tttBoard[flattenCoords(x, y)] = marking;

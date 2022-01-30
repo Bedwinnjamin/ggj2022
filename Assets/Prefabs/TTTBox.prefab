@@ -49,6 +49,7 @@ MonoBehaviour:
   y: 0
   xSprite: {fileID: 3740433704654644220, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   oSprite: {fileID: 7724673017750363112, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  grid: {fileID: 7354193280475180356, guid: efea260f77d1b9e44b9d2ee316b15052, type: 3}
 --- !u!61 &8111565618603904707
 BoxCollider2D:
   m_ObjectHideFlags: 0

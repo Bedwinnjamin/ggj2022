@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 public class SpaceScript : MonoBehaviour
 {
@@ -9,12 +10,39 @@ public class SpaceScript : MonoBehaviour
 
     public Sprite xSprite;
     public Sprite oSprite;
+    
+    public bool isFree {
+        get {
+            return state == 0;
+        }
+    }
+    
+    private int state = 0;
+    public int State {
+        get { return state; }
+        set {
+            state = value;
+            switch (state) {
+                case 0:
+                    gameObject.GetComponent<SpriteRenderer>().sprite = null;
+                    break;
+                case 1:
+                    gameObject.GetComponent<SpriteRenderer>().sprite = xSprite;
+                    break;
+                case 2:
+                    gameObject.GetComponent<SpriteRenderer>().sprite = oSprite;
+                    break;
+            }
+        }
+    }
 
-    bool free = true;
+    private void Start() {
+        State = 0;
+    }
 
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (free)
+        if (isFree)
         {
             Debug.Log(x.ToString() + "," + y.ToString() + " [CAN CLAIM]");
             collider.gameObject.GetComponent<LetterManager>().OfferClaim();
@@ -22,36 +50,16 @@ public class SpaceScript : MonoBehaviour
         else
         {
             Debug.Log(x.ToString() + "," + y.ToString());
-
         }
     }
 
     public void ClaimSquare(int playerID)
     {
-        //TODO: Change sprite
-        free = false;
-
-        if (playerID == 1)
-        {
-            gameObject.GetComponent<SpriteRenderer>().sprite = xSprite;
-        }
-        else
-        {
-            gameObject.GetComponent<SpriteRenderer>().sprite = oSprite;
-
-        }
-
-        GameObject.Find("TTTGrid").GetComponent<TTTGameScript>().ClaimSquare(x, y, playerID);
-    }
-
-    public bool isFree()
-    {
-        return free;
+        GameObject.Find("TTTGameManager").GetComponent<TTTGameScript>().ClaimSquare(x, y, playerID);
     }
 
     public void ResetSquare() 
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = null;
-        free = true;
+        State = 0;
     }
 }

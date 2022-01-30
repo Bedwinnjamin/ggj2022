@@ -5,40 +5,42 @@ using Mirror;
 
 public class LetterManager : NetworkBehaviour
 {
-    //public TextMesh textMesh;
-    public Color LetterColor;
-
-    public GameObject space = null;
-
+    private GameObject space;
     public GameObject letterSprite;
-    public SpriteRenderer letterRenderer;
+    private SpriteRenderer letterRenderer;
     public RuntimeAnimatorController blueDino;
     public RuntimeAnimatorController redDino;
-
     public Sprite blueX;
     public Sprite blueO;
     public Sprite redX;
     public Sprite redO;
 
-    public bool playerIsRed;  //TODO: Set this automatically
+    [SyncVar]
+    public bool playerIsRed;
 
-    private Color originalColor;
-
-    private string currentLetter;
-
+    [SyncVar]
+    public string currentLetter;
     public int insideSquareCount;
 
     private static string[] possibleLetters = { "X", "O" };
 
-    // Start is called before the first frame update
     void Start()
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
         
         Animator animator = this.GetComponent<Animator>();
-        animator.runtimeAnimatorController = redDino as RuntimeAnimatorController; 
 
-        //textMesh.color = LetterColor;
+        if (playerIsRed)
+        {
+            playerIsRed = true;
+            animator.runtimeAnimatorController = redDino as RuntimeAnimatorController;
+        }
+        else
+        {
+            playerIsRed = false;
+            animator.runtimeAnimatorController = blueDino as RuntimeAnimatorController;
+        }
+
         currentLetter = possibleLetters[Random.Range(0, 2)];
         Debug.Log(currentLetter);
         SwitchSprite();
@@ -49,7 +51,6 @@ public class LetterManager : NetworkBehaviour
         currentLetter = (currentLetter == "X") ? "O" : "X";
         Debug.Log(currentLetter);
         SwitchSprite();
-        //textMesh.text = (textMesh.text == "X") ? "O" : "X";
     }
 
     void SwitchSprite()
@@ -89,9 +90,11 @@ public class LetterManager : NetworkBehaviour
             }
             if (Input.GetKeyDown("f") && insideSquareCount > 0)
             {
-                if (space.GetComponent<SpaceScript>().isFree())
+                if (space.GetComponent<SpaceScript>().isFree)
                 {
                     int playerID = (currentLetter == "X") ? 1 : 2;
+
+                    Debug.Log("Placing Letter");
 
                     space.GetComponent<SpaceScript>().ClaimSquare(playerID);
 
@@ -106,7 +109,6 @@ public class LetterManager : NetworkBehaviour
     public void OfferClaim()
     {
         //TODO: Show that the space is claimable
-        //textMesh.color = Color.yellow;
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -125,7 +127,6 @@ public class LetterManager : NetworkBehaviour
     {
         if (other.tag == "space")
         {
-            //textMesh.color = originalColor;
             Debug.Log("Leaving Square");
             insideSquareCount--;
         }
