@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8869209653892656693}
   - component: {fileID: 2636706280478420338}
   - component: {fileID: 3735159717317664878}
+  - component: {fileID: -3379910442442701480}
   m_Layer: 0
   m_Name: Dino
   m_TagString: Untagged
@@ -229,7 +230,6 @@ MonoBehaviour:
   redX: {fileID: 2638870717198299584, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   redO: {fileID: -662986676217712088, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   playerIsRed: 0
-  insideSquareCount: 0
 --- !u!95 &3735159717317664878
 Animator:
   serializedVersion: 3
@@ -249,6 +249,20 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &-3379910442442701480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274804794903317078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be43bf00c43d85448fbb5157e4a7721, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
 --- !u!1 &3492019731244202095
 GameObject:
   m_ObjectHideFlags: 0
