@@ -57,7 +57,8 @@ public class TTTGameScript : NetworkBehaviour
     public void ClaimSquare(int x, int y, int marking, Player player)
     {
         tttBoard[flattenCoords(x, y)] = marking;
-
+        var netmanager = GameObject.Find("NetworkController").GetComponent<BetterNetworkManager>();
+        player.Respawn(netmanager.GetStartPosition().position);
         if (CheckForWin())
         {
             // give player a point

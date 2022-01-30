@@ -54,6 +54,12 @@ public class Player : NetworkBehaviour
         SwitchSprite();
     }
 
+    [TargetRpc]
+    public void Respawn(Vector3 position)
+    {
+        transform.position = position;
+    }
+
     void SwitchLetter()
     {
         setCurrentLetter((currentLetter == "X") ? "O" : "X");

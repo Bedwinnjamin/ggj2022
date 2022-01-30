@@ -87,7 +87,7 @@ public class BetterNetworkManager : NetworkRoomManager
         var player = gameObject.GetComponent<Player>();
         player.playerIsRed = roomPlayer.GetComponent<RoomPlayer>().playerIsRed;
         gameObject.transform.position = GetStartPosition().position;
-        Destroy(roomPlayer, 0.1f);
+        Destroy(roomPlayer, 0.2f);
         return gameObject;
     }
 
