@@ -5,48 +5,16 @@ using Mirror;
 
 public class BetterNetworkManager : NetworkManager
 {
-    public override void OnStartServer()
+    public int playersAdded = 0;
+
+    public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        base.OnStartServer();
-
-        NetworkServer.RegisterHandler<SpawnCharacterMessage>(OnCreateCharacter);
-    }
-
-    public override void OnClientConnect(NetworkConnection conn) {
-        base.OnClientConnect(conn);
-
-        if (numPlayers == 1)
-        {
-            conn.Send(
-                new SpawnCharacterMessage
-                {
-                    isRed = false
-                }
-            );
-        } 
-        else
-        {
-            conn.Send(
-                new SpawnCharacterMessage
-                {
-                    isRed = true
-                }
-            );
-        }
-    }
-
-    void OnCreateCharacter(NetworkConnection conn, SpawnCharacterMessage message)
-    {
+        playersAdded += 1;
         GameObject gameObject = Instantiate(playerPrefab);
-
         LetterManager lm = gameObject.GetComponent<LetterManager>();
-        lm.playerIsRed = message.isRed;
-
+        lm.playerIsRed = playersAdded > 1;
+        Animator animator = this.GetComponent<Animator>();
+        print($"new client, we now have {playersAdded} players");
         NetworkServer.AddPlayerForConnection(conn, gameObject);
-    }
-
-    public struct SpawnCharacterMessage : NetworkMessage
-    {
-        public bool isRed;
     }
 }
