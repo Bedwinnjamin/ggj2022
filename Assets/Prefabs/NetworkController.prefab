@@ -78,17 +78,25 @@ MonoBehaviour:
   runInBackground: 1
   autoStartServerBuild: 1
   serverTickRate: 30
-  offlineScene: 
-  onlineScene: 
+  offlineScene: Assets/Scenes/MainMenu.unity
+  onlineScene: Assets/Scenes/Lobby.unity
   transport: {fileID: 7045519507906425805}
   networkAddress: localhost
-  maxConnections: 100
+  maxConnections: 2
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1274804794903317078, guid: 15bae75cd5c2d1a4d9ce5bac8cb6f721, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 1
   spawnPrefabs:
   - {fileID: 7354193280475180356, guid: efea260f77d1b9e44b9d2ee316b15052, type: 3}
+  showRoomGUI: 1
+  minPlayers: 2
+  roomPlayerPrefab: {fileID: 50785789499261133, guid: c7dd6359e5ff2ae4b81db04bf381acb5, type: 3}
+  RoomScene: Assets/Scenes/Lobby.unity
+  GameplayScene: Assets/Scenes/GameScene.unity
+  _allPlayersReady: 0
+  roomSlots: []
+  clientIndex: 0
 --- !u!114 &6475897119064002692
 MonoBehaviour:
   m_ObjectHideFlags: 0
