@@ -33,6 +33,6 @@ public class MainMenu : MonoBehaviour
     public void QuitGame()
     {
         SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Click);
-    	//Application.Quit();
+    	Application.Quit();
     }
 }
