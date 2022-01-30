@@ -48670,6 +48670,7 @@ GameObject:
   - component: {fileID: 174302871}
   - component: {fileID: 174302870}
   - component: {fileID: 174302869}
+  - component: {fileID: 174302872}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -48712,7 +48713,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 20.886799
+  orthographic size: 20.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -48736,12 +48737,27 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 174302868}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &174302872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174302868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03bf822e640b41248b7760a20a905d90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  smoothTime: 0.5
+  minZoom: 10
+  maxZoom: 20.5
 --- !u!1001 &216186890
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49896,10 +49912,11 @@ MonoBehaviour:
   maxConnections: 100
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1274804794903317078, guid: 15bae75cd5c2d1a4d9ce5bac8cb6f721, type: 3}
-  autoCreatePlayer: 0
+  autoCreatePlayer: 1
   playerSpawnMethod: 1
   spawnPrefabs:
   - {fileID: 7354193280475180356, guid: efea260f77d1b9e44b9d2ee316b15052, type: 3}
+  playersAdded: 0
 --- !u!1001 &1573238751
 PrefabInstance:
   m_ObjectHideFlags: 0
