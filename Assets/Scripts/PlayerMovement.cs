@@ -10,12 +10,14 @@ public class PlayerMovement : NetworkBehaviour
     public Rigidbody2D rb;
     
     private Animator animator;
+    private SpriteRenderer sr;
 
     Vector2 movement;
 
     void Start()
     {
         animator = this.GetComponent<Animator>();
+        sr = this.GetComponent<SpriteRenderer>();
     }
 
     void HandleMovement()
@@ -29,11 +31,11 @@ public class PlayerMovement : NetworkBehaviour
             animator.SetFloat("Speed", movement.sqrMagnitude);
             if(movement.x < 0)
             {
-            	animator.SetBool("Left", true);
+            	sr.flipX = true;
             }
             else
             {
-            	animator.SetBool("Left", false);
+                sr.flipX = false;
             }
         }
     }

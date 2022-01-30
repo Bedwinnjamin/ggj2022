@@ -18,16 +18,12 @@ public class LetterManager : NetworkBehaviour
     [SyncVar]
     public bool playerIsRed;
 
-    [SyncVar]
-    public string currentLetter;
-    public int insideSquareCount;
-
     private static string[] possibleLetters = { "X", "O" };
 
     void Start()
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
-        
+
         Animator animator = this.GetComponent<Animator>();
 
         if (playerIsRed)
@@ -88,7 +84,7 @@ public class LetterManager : NetworkBehaviour
             {
                 SwitchLetter();
             }
-            if (Input.GetKeyDown("f") && insideSquareCount > 0)
+            if (Input.GetKeyDown("f") && space != null)
             {
                 if (space.GetComponent<SpaceScript>().isFree)
                 {
@@ -116,7 +112,6 @@ public class LetterManager : NetworkBehaviour
         if (other.tag == "space")
         {
             space = other.gameObject;
-            insideSquareCount++;
 
             //TODO: Highlight the square that you are occupying
             //TODO: Remove your highlight from other squares
@@ -125,10 +120,10 @@ public class LetterManager : NetworkBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (other.tag == "space")
+        if (other.gameObject == space)
         {
             Debug.Log("Leaving Square");
-            insideSquareCount--;
+            space = null;
         }
     }
 }
