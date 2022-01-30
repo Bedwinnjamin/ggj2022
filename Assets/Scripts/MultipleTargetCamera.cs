@@ -6,6 +6,7 @@ using UnityEngine;
 public class MultipleTargetCamera : MonoBehaviour
 {
     private Vector3 velocity;
+    private float zoomVelocity;
     private List<Transform> targets;
     public float smoothTime = .5f;
     public float minZoom = 10f;
@@ -21,12 +22,16 @@ public class MultipleTargetCamera : MonoBehaviour
 
     void Zoom()
     {
-        print(GetGreatestDistance());
-        var distance = GetGreatestDistance();
-        var targetZoom = Mathf.Max(Mathf.Min(distance / 35, 1) * maxZoom, minZoom);
+        var targetZoom = maxZoom;
+        if (targets.Count > 0)
+        {
+            print(GetGreatestDistance());
+            var distance = GetGreatestDistance();
+            targetZoom = Mathf.Max(Mathf.Min(distance / 35, 1) * maxZoom, minZoom);
+        }
         var camera = GetComponent<Camera>();
         print("target zoom: " + targetZoom);
-        camera.orthographicSize = targetZoom;
+        camera.orthographicSize = Mathf.SmoothDamp(camera.orthographicSize, targetZoom, ref zoomVelocity, smoothTime);
     }
 
     void Move()
