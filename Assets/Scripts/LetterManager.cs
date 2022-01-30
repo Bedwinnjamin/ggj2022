@@ -16,6 +16,9 @@ public class LetterManager : NetworkBehaviour
     public Sprite redO;
 
     [SyncVar]
+    public string currentLetter;
+
+    [SyncVar]
     public bool playerIsRed;
 
     private static string[] possibleLetters = { "X", "O" };
