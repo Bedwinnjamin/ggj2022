@@ -100,13 +100,7 @@ public class Player : NetworkBehaviour
             {
                 if (space.GetComponent<SpaceScript>().isFree)
                 {
-                    int playerID = (currentLetter == "X") ? 1 : 2;
-
-                    Debug.Log("Placing Letter");
-
-                    space.GetComponent<SpaceScript>().ClaimSquare(playerID);
-
-                    Debug.Log("Placed Your Letter!");
+                    space.GetComponent<SpaceScript>().ClaimSquare(currentLetter, this);
 
                     //TODO: Respawn the player
                 }

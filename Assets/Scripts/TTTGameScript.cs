@@ -10,6 +10,11 @@ public class TTTGameScript : NetworkBehaviour
 
     public List<GameObject> tttObjects = new List<GameObject>();
 
+    [SyncVar]
+    public int redScore = 0;
+    [SyncVar]
+    public int blueScore = 0;
+
     private void resetBoard()
     {
         tttBoard.Clear();
@@ -49,11 +54,24 @@ public class TTTGameScript : NetworkBehaviour
     }
 
     [Command(requiresAuthority = false)]
-    public void ClaimSquare(int x, int y, int marking)
+    public void ClaimSquare(int x, int y, int marking, Player player)
     {
         tttBoard[flattenCoords(x, y)] = marking;
 
         if (CheckForWin())
+        {
+            // give player a point
+            if (player.playerIsRed)
+            {
+                redScore += 1;
+            }
+            else
+            {
+                blueScore += 1;
+            }
+            ResetGame();
+        }
+        else if (CheckForDraw())
         {
             ResetGame();
         }

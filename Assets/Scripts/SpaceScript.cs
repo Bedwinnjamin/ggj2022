@@ -59,9 +59,10 @@ public class SpaceScript : MonoBehaviour
         }
     }
 
-    public void ClaimSquare(int playerID)
+    public void ClaimSquare(string letter, Player player)
     {
-        GameObject.Find("TTTGameManager").GetComponent<TTTGameScript>().ClaimSquare(x, y, playerID);
+        int symbol = (letter == "X") ? 1 : 2;
+        GameObject.Find("TTTGameManager").GetComponent<TTTGameScript>().ClaimSquare(x, y, symbol, player);
     }
 
     public void ResetSquare()
