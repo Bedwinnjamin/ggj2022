@@ -14,7 +14,6 @@ public class MultipleTargetCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        print("updating");
         targets = GameObject.FindGameObjectsWithTag("Player").Select(obj => obj.transform).ToList();
         Zoom();
         Move();
@@ -25,12 +24,10 @@ public class MultipleTargetCamera : MonoBehaviour
         var targetZoom = maxZoom;
         if (targets.Count > 0)
         {
-            print(GetGreatestDistance());
             var distance = GetGreatestDistance();
             targetZoom = Mathf.Max(Mathf.Min(distance / 35, 1) * maxZoom, minZoom);
         }
         var camera = GetComponent<Camera>();
-        print("target zoom: " + targetZoom);
         camera.orthographicSize = Mathf.SmoothDamp(camera.orthographicSize, targetZoom, ref zoomVelocity, smoothTime);
     }
 
