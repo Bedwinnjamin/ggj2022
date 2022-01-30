@@ -15,6 +15,8 @@ public class TTTGameScript : NetworkBehaviour
     [SyncVar]
     public int blueScore = 0;
 
+    public bool boardLocked = false;
+
     private void resetBoard()
     {
         tttBoard.Clear();
@@ -22,6 +24,7 @@ public class TTTGameScript : NetworkBehaviour
         {
             tttBoard.Add(0);
         }
+        boardLocked = false;
     }
 
     public override void OnStartClient()
@@ -56,11 +59,18 @@ public class TTTGameScript : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void ClaimSquare(int x, int y, int marking, Player player)
     {
+        if (boardLocked == true)
+        {
+            Debug.Log("Board is Locked!");
+            return;
+        }
+
         tttBoard[flattenCoords(x, y)] = marking;
         var netmanager = GameObject.Find("NetworkController").GetComponent<BetterNetworkManager>();
         player.Respawn(netmanager.GetStartPosition().position);
         if (CheckForWin())
         {
+            boardLocked = true;
             // give player a point
             if (player.playerIsRed)
             {
