@@ -111,8 +111,9 @@ public class PlayerMovement : NetworkBehaviour
             if (player != gameObject)
             {
                 Debug.Log("I'm setting it now");
-                Vector2 direction = gameObject.transform.position - player.transform.position;
-                Debug.Log(direction * leafBlowerStrength);
+                Vector2 direction = (gameObject.transform.position - player.transform.position);
+                direction.Normalize();
+                Debug.Log(direction * leafBlowerStrength); 
                 StartCoroutine(setLeafBlowerDelta(direction * leafBlowerStrength / 100));
             }
         }
