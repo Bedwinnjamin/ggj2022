@@ -12,9 +12,8 @@ public class BetterNetworkManager : NetworkManager
     {
         playersAdded += 1;
         GameObject gameObject = Instantiate(playerPrefab);
-        LetterManager lm = gameObject.GetComponent<LetterManager>();
+        Player lm = gameObject.GetComponent<Player>();
         lm.playerIsRed = playersAdded > 1;
-        Animator animator = this.GetComponent<Animator>();
         print($"new client, we now have {playersAdded} players");
         print(conn.connectionId);
         gameObject.transform.position = NetworkManager.startPositions[startPosIndex].position;

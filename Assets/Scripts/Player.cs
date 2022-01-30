@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class LetterManager : NetworkBehaviour
+public class Player : NetworkBehaviour
 {
     private GameObject space;
     public GameObject letterSprite;

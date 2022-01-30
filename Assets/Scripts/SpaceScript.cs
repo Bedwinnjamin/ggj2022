@@ -10,19 +10,24 @@ public class SpaceScript : MonoBehaviour
 
     public Sprite xSprite;
     public Sprite oSprite;
-    
-    public bool isFree {
-        get {
+
+    public bool isFree
+    {
+        get
+        {
             return state == 0;
         }
     }
-    
+
     private int state = 0;
-    public int State {
+    public int State
+    {
         get { return state; }
-        set {
+        set
+        {
             state = value;
-            switch (state) {
+            switch (state)
+            {
                 case 0:
                     gameObject.GetComponent<SpriteRenderer>().sprite = null;
                     break;
@@ -36,7 +41,8 @@ public class SpaceScript : MonoBehaviour
         }
     }
 
-    private void Start() {
+    private void Start()
+    {
         State = 0;
     }
 
@@ -45,7 +51,7 @@ public class SpaceScript : MonoBehaviour
         if (isFree)
         {
             Debug.Log(x.ToString() + "," + y.ToString() + " [CAN CLAIM]");
-            collider.gameObject.GetComponent<LetterManager>().OfferClaim();
+            collider.gameObject.GetComponent<Player>().OfferClaim();
         }
         else
         {
@@ -58,7 +64,7 @@ public class SpaceScript : MonoBehaviour
         GameObject.Find("TTTGameManager").GetComponent<TTTGameScript>().ClaimSquare(x, y, playerID);
     }
 
-    public void ResetSquare() 
+    public void ResetSquare()
     {
         State = 0;
     }
