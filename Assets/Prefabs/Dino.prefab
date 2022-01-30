@@ -79,15 +79,15 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1193820911090328509, guid: 669ba00f12c0f393fbd0db39d69474c5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.46875, y: 0.53125}
+  m_Size: {x: 0.9375, y: 1.0625}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &1274804794903317072
@@ -145,7 +145,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.9375, y: 1.0625}
-    newSize: {x: 0.46875, y: 0.53125}
+    newSize: {x: 0.9375, y: 1.0625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -216,10 +216,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47057d4dfdcd68f46a42c82bcb5d4953, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textMesh: {fileID: 0}
+  syncMode: 0
+  syncInterval: 0.1
   LetterColor: {r: 0, g: 0, b: 0, a: 0}
-  insideSpace: 0
   space: {fileID: 0}
+  letterSprite: {fileID: 3492019731244202095}
+  letterRenderer: {fileID: 0}
+  blueDino: {fileID: 9100000, guid: 0d61a86314fbc741292db0bf8178ffcf, type: 2}
+  redDino: {fileID: 9100000, guid: ea73bcadf4fbeac35bd8a2932dfc4117, type: 2}
+  blueX: {fileID: -4964184822090623332, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  blueO: {fileID: 2152131933643943973, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  redX: {fileID: 2638870717198299584, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  redO: {fileID: -662986676217712088, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  playerIsRed: 0
+  insideSquareCount: 0
 --- !u!95 &3735159717317664878
 Animator:
   serializedVersion: 3

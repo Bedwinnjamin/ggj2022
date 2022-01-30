@@ -12,7 +12,8 @@ public class LetterManager : NetworkBehaviour
 
     public GameObject letterSprite;
     public SpriteRenderer letterRenderer;
-    public Animator animator;
+    public RuntimeAnimatorController blueDino;
+    public RuntimeAnimatorController redDino;
 
     public Sprite blueX;
     public Sprite blueO;
@@ -34,7 +35,8 @@ public class LetterManager : NetworkBehaviour
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
         
-        animator.runtimeAnimatorController = Resources.Load("Assets/Sprites/animations/BlueDino.controller") as RuntimeAnimatorController; 
+        Animator animator = this.GetComponent<Animator>();
+        animator.runtimeAnimatorController = redDino as RuntimeAnimatorController; 
 
         //textMesh.color = LetterColor;
         currentLetter = possibleLetters[Random.Range(0, 2)];

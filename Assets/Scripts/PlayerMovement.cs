@@ -9,9 +9,14 @@ public class PlayerMovement : NetworkBehaviour
     public float moveSpeed = 5f;
     public Rigidbody2D rb;
     
-    public Animator animator;
+    private Animator animator;
 
     Vector2 movement;
+
+    void Start()
+    {
+        animator = this.GetComponent<Animator>();
+    }
 
     void HandleMovement()
     {
