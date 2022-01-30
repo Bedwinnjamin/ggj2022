@@ -15,6 +15,18 @@ public class PlayerMovement : NetworkBehaviour
 
     Vector2 movement;
 
+    [SyncVar(hook = (nameof(UpdateSpriteRenderer)))]
+    bool isLeft;
+    void UpdateSpriteRenderer(bool old, bool val)
+    {
+        sr.flipX = val;
+    }
+    [Command]
+    void SetIsLeft(bool value)
+    {
+        isLeft = value;
+    }
+
     void Start()
     {
         animator = this.GetComponent<Animator>();
@@ -28,15 +40,14 @@ public class PlayerMovement : NetworkBehaviour
             movement.x = Input.GetAxisRaw("Horizontal");
             movement.y = Input.GetAxisRaw("Vertical");
 
-
             animator.SetFloat("Speed", movement.sqrMagnitude);
             if (movement.x < 0)
             {
-                animator.SetBool("Left", true);
+                SetIsLeft(true);
             }
             else if (movement.x > 0)
             {
-                animator.SetBool("Left", false);
+                SetIsLeft(false);
             }
         }
     }
@@ -45,7 +56,6 @@ public class PlayerMovement : NetworkBehaviour
     {
         HandleMovement();
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
-        Debug.Log(rb.velocity);
     }
 
     [TargetRpc]

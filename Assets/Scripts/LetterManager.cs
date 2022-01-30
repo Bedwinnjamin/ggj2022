@@ -47,9 +47,6 @@ public class LetterManager : NetworkBehaviour
             animator.runtimeAnimatorController = blueDino as RuntimeAnimatorController;
         }
 
-        // var netAnimator = this.GetComponent<NetworkAnimator>();
-        // netAnimator.animator = animator;
-
         if (isLocalPlayer)
         {
             setCurrentLetter(possibleLetters[Random.Range(0, 2)]);
