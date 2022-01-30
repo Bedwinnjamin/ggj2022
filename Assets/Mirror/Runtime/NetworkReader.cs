@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Mirror
@@ -31,10 +33,18 @@ namespace Mirror
         public int Position;
 
         /// <summary>Total number of bytes to read from buffer</summary>
-        public int Length => buffer.Count;
+        public int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => buffer.Count;
+        }
 
         /// <summary>Remaining bytes that can be read, for convenience.</summary>
-        public int Remaining => Length - Position;
+        public int Remaining
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length - Position;
+        }
 
         public NetworkReader(byte[] bytes)
         {
@@ -48,32 +58,98 @@ namespace Mirror
 
         // sometimes it's useful to point a reader on another buffer instead of
         // allocating a new reader (e.g. NetworkReaderPool)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetBuffer(byte[] bytes)
         {
             buffer = new ArraySegment<byte>(bytes);
             Position = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetBuffer(ArraySegment<byte> segment)
         {
             buffer = segment;
             Position = 0;
         }
 
-        // IMPORTANT: ReadBlittable<T> via fixed pinning WON'T WORK on android:
-        //            https://github.com/vis2k/Mirror/issues/3044
-        //            if we ever do it again, use NativeArray + .GetPtr()!
-        public byte ReadByte()
+        // ReadBlittable<T> from DOTSNET
+        // this is extremely fast, but only works for blittable types.
+        // => private to make sure nobody accidentally uses it for non-blittable
+        //
+        // Benchmark: see NetworkWriter.WriteBlittable!
+        //
+        // Note:
+        //   ReadBlittable assumes same endianness for server & client.
+        //   All Unity 2018+ platforms are little endian.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe T ReadBlittable<T>()
+            where T : unmanaged
         {
-            if (Position + 1 > buffer.Count)
+            // check if blittable for safety
+#if UNITY_EDITOR
+            if (!UnsafeUtility.IsBlittable(typeof(T)))
             {
-                throw new EndOfStreamException($"ReadByte out of range:{ToString()}");
+                throw new ArgumentException($"{typeof(T)} is not blittable!");
             }
-            return buffer.Array[buffer.Offset + Position++];
+#endif
+
+            // calculate size
+            //   sizeof(T) gets the managed size at compile time.
+            //   Marshal.SizeOf<T> gets the unmanaged size at runtime (slow).
+            // => our 1mio writes benchmark is 6x slower with Marshal.SizeOf<T>
+            // => for blittable types, sizeof(T) is even recommended:
+            // https://docs.microsoft.com/en-us/dotnet/standard/native-interop/best-practices
+            int size = sizeof(T);
+
+            // enough data to read?
+            if (Position + size > buffer.Count)
+            {
+                throw new EndOfStreamException($"ReadBlittable<{typeof(T)}> out of range: {ToString()}");
+            }
+
+            // read blittable
+            T value;
+            fixed (byte* ptr = &buffer.Array[buffer.Offset + Position])
+            {
+#if UNITY_ANDROID
+                // on some android systems, reading *(T*)ptr throws a NRE if
+                // the ptr isn't aligned (i.e. if Position is 1,2,3,5, etc.).
+                // here we have to use memcpy.
+                //
+                // => we can't get a pointer of a struct in C# without
+                //    marshalling allocations
+                // => instead, we stack allocate an array of type T and use that
+                // => stackalloc avoids GC and is very fast. it only works for
+                //    value types, but all blittable types are anyway.
+                //
+                // this way, we can still support blittable reads on android.
+                // see also: https://github.com/vis2k/Mirror/issues/3044
+                // (solution discovered by AIIO, FakeByte, mischa)
+                T* valueBuffer = stackalloc T[1];
+                UnsafeUtility.MemCpy(valueBuffer, ptr, size);
+                value = valueBuffer[0];
+#else
+                // cast buffer to a T* pointer and then read from it.
+                value = *(T*)ptr;
+#endif
+            }
+            Position += size;
+            return value;
         }
+
+        // blittable'?' template for code reuse
+        // note: bool isn't blittable. need to read as byte.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal T? ReadBlittableNullable<T>()
+            where T : unmanaged =>
+                ReadByte() != 0 ? ReadBlittable<T>() : default(T?);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadByte() => ReadBlittable<byte>();
 
         /// <summary>Read 'count' bytes into the bytes array</summary>
         // TODO why does this also return bytes[]???
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte[] ReadBytes(byte[] bytes, int count)
         {
             // check if passed byte array is big enough
@@ -88,6 +164,7 @@ namespace Mirror
         }
 
         /// <summary>Read 'count' bytes allocation-free as ArraySegment that points to the internal array.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySegment<byte> ReadBytesSegment(int count)
         {
             // check if within buffer limits
@@ -102,12 +179,14 @@ namespace Mirror
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return $"NetworkReader pos={Position} len={Length} buffer={BitConverter.ToString(buffer.Array, buffer.Offset, buffer.Count)}";
         }
 
         /// <summary>Reads any data type that mirror supports. Uses weaver populated Reader(T).read</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Read<T>()
         {
             Func<NetworkReader, T> readerDelegate = Reader<T>.read;
@@ -129,88 +208,80 @@ namespace Mirror
         // 1000 readers after: 0.8MB GC, 18ms
         static readonly UTF8Encoding encoding = new UTF8Encoding(false, true);
 
-        public static byte ReadByte(this NetworkReader reader) => reader.ReadByte();
-        public static byte? ReadByteNullable(this NetworkReader reader) => reader.ReadBool() ? ReadByte(reader) : default(byte?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ReadByte(this NetworkReader reader) => reader.ReadBlittable<byte>();
 
-        public static sbyte ReadSByte(this NetworkReader reader) => (sbyte)reader.ReadByte();
-        public static sbyte? ReadSByteNullable(this NetworkReader reader) => reader.ReadBool() ? ReadSByte(reader) : default(sbyte?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte? ReadByteNullable(this NetworkReader reader) => reader.ReadBlittableNullable<byte>();
 
-        public static char ReadChar(this NetworkReader reader) => (char)reader.ReadUShort();
-        public static char? ReadCharNullable(this NetworkReader reader) => reader.ReadBool() ? ReadChar(reader) : default(char?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte ReadSByte(this NetworkReader reader) => reader.ReadBlittable<sbyte>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte? ReadSByteNullable(this NetworkReader reader) => reader.ReadBlittableNullable<sbyte>();
 
-        public static bool ReadBool(this NetworkReader reader) => reader.ReadByte() != 0;
-        public static bool? ReadBoolNullable(this NetworkReader reader) => reader.ReadBool() ? ReadBool(reader) : default(bool?);
+        // bool is not blittable. read as ushort.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char ReadChar(this NetworkReader reader) => (char)reader.ReadBlittable<ushort>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char? ReadCharNullable(this NetworkReader reader) => (char?)reader.ReadBlittableNullable<ushort>();
 
+        // bool is not blittable. read as byte.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ReadBool(this NetworkReader reader) => reader.ReadBlittable<byte>() != 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool? ReadBoolNullable(this NetworkReader reader)
+        {
+            byte? value = reader.ReadBlittableNullable<byte>();
+            return value.HasValue ? (value.Value != 0) : default(bool?);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ReadShort(this NetworkReader reader) => (short)reader.ReadUShort();
-        public static short? ReadShortNullable(this NetworkReader reader) => reader.ReadBool() ? ReadShort(reader) : default(short?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short? ReadShortNullable(this NetworkReader reader) => reader.ReadBlittableNullable<short>();
 
-        public static ushort ReadUShort(this NetworkReader reader)
-        {
-            ushort value = 0;
-            value |= reader.ReadByte();
-            value |= (ushort)(reader.ReadByte() << 8);
-            return value;
-        }
-        public static ushort? ReadUShortNullable(this NetworkReader reader) => reader.ReadBool() ? ReadUShort(reader) : default(ushort?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUShort(this NetworkReader reader) => reader.ReadBlittable<ushort>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort? ReadUShortNullable(this NetworkReader reader) => reader.ReadBlittableNullable<ushort>();
 
-        public static int ReadInt(this NetworkReader reader) => (int)reader.ReadUInt();
-        public static int? ReadIntNullable(this NetworkReader reader) => reader.ReadBool() ? ReadInt(reader) : default(int?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadInt(this NetworkReader reader) => reader.ReadBlittable<int>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int? ReadIntNullable(this NetworkReader reader) => reader.ReadBlittableNullable<int>();
 
-        public static uint ReadUInt(this NetworkReader reader)
-        {
-            uint value = 0;
-            value |= reader.ReadByte();
-            value |= (uint)(reader.ReadByte() << 8);
-            value |= (uint)(reader.ReadByte() << 16);
-            value |= (uint)(reader.ReadByte() << 24);
-            return value;
-        }
-        public static uint? ReadUIntNullable(this NetworkReader reader) => reader.ReadBool() ? ReadUInt(reader) : default(uint?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ReadUInt(this NetworkReader reader) => reader.ReadBlittable<uint>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint? ReadUIntNullable(this NetworkReader reader) => reader.ReadBlittableNullable<uint>();
 
-        public static long ReadLong(this NetworkReader reader) => (long)reader.ReadULong();
-        public static long? ReadLongNullable(this NetworkReader reader) => reader.ReadBool() ? ReadLong(reader) : default(long?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ReadLong(this NetworkReader reader) => reader.ReadBlittable<long>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long? ReadLongNullable(this NetworkReader reader) => reader.ReadBlittableNullable<long>();
 
-        public static ulong ReadULong(this NetworkReader reader)
-        {
-            ulong value = 0;
-            value |= reader.ReadByte();
-            value |= ((ulong)reader.ReadByte()) << 8;
-            value |= ((ulong)reader.ReadByte()) << 16;
-            value |= ((ulong)reader.ReadByte()) << 24;
-            value |= ((ulong)reader.ReadByte()) << 32;
-            value |= ((ulong)reader.ReadByte()) << 40;
-            value |= ((ulong)reader.ReadByte()) << 48;
-            value |= ((ulong)reader.ReadByte()) << 56;
-            return value;
-        }
-        public static ulong? ReadULongNullable(this NetworkReader reader) => reader.ReadBool() ? ReadULong(reader) : default(ulong?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong ReadULong(this NetworkReader reader) => reader.ReadBlittable<ulong>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong? ReadULongNullable(this NetworkReader reader) => reader.ReadBlittableNullable<ulong>();
 
-        public static float ReadFloat(this NetworkReader reader)
-        {
-            UIntFloat converter = new UIntFloat();
-            converter.intValue = reader.ReadUInt();
-            return converter.floatValue;
-        }
-        public static float? ReadFloatNullable(this NetworkReader reader) => reader.ReadBool() ? ReadFloat(reader) : default(float?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ReadFloat(this NetworkReader reader) => reader.ReadBlittable<float>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float? ReadFloatNullable(this NetworkReader reader) => reader.ReadBlittableNullable<float>();
 
-        public static double ReadDouble(this NetworkReader reader)
-        {
-            UIntDouble converter = new UIntDouble();
-            converter.longValue = reader.ReadULong();
-            return converter.doubleValue;
-        }
-        public static double? ReadDoubleNullable(this NetworkReader reader) => reader.ReadBool() ? ReadDouble(reader) : default(double?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ReadDouble(this NetworkReader reader) => reader.ReadBlittable<double>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double? ReadDoubleNullable(this NetworkReader reader) => reader.ReadBlittableNullable<double>();
 
-        public static decimal ReadDecimal(this NetworkReader reader)
-        {
-            UIntDecimal converter = new UIntDecimal();
-            converter.longValue1 = reader.ReadULong();
-            converter.longValue2 = reader.ReadULong();
-            return converter.decimalValue;
-        }
-        public static decimal? ReadDecimalNullable(this NetworkReader reader) => reader.ReadBool() ? ReadDecimal(reader) : default(decimal?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static decimal ReadDecimal(this NetworkReader reader) => reader.ReadBlittable<decimal>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static decimal? ReadDecimalNullable(this NetworkReader reader) => reader.ReadBlittableNullable<decimal>();
 
         /// <exception cref="T:System.ArgumentException">if an invalid utf8 string is sent</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString(this NetworkReader reader)
         {
             // read number of bytes
@@ -235,6 +306,7 @@ namespace Mirror
         }
 
         /// <exception cref="T:OverflowException">if count is invalid</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ReadBytesAndSize(this NetworkReader reader)
         {
             // count = 0 means the array was null
@@ -244,6 +316,7 @@ namespace Mirror
             return count == 0 ? null : reader.ReadBytes(checked((int)(count - 1u)));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ReadBytes(this NetworkReader reader, int count)
         {
             byte[] bytes = new byte[count];
@@ -252,6 +325,7 @@ namespace Mirror
         }
 
         /// <exception cref="T:OverflowException">if count is invalid</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ArraySegment<byte> ReadBytesAndSizeSegment(this NetworkReader reader)
         {
             // count = 0 means the array was null
@@ -261,66 +335,72 @@ namespace Mirror
             return count == 0 ? default : reader.ReadBytesSegment(checked((int)(count - 1u)));
         }
 
-        public static Vector2 ReadVector2(this NetworkReader reader) => new Vector2(reader.ReadFloat(), reader.ReadFloat());
-        public static Vector2? ReadVector2Nullable(this NetworkReader reader) => reader.ReadBool() ? ReadVector2(reader) : default(Vector2?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2 ReadVector2(this NetworkReader reader) => reader.ReadBlittable<Vector2>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2? ReadVector2Nullable(this NetworkReader reader) => reader.ReadBlittableNullable<Vector2>();
 
-        public static Vector3 ReadVector3(this NetworkReader reader) => new Vector3(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
-        public static Vector3? ReadVector3Nullable(this NetworkReader reader) => reader.ReadBool() ? ReadVector3(reader) : default(Vector3?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 ReadVector3(this NetworkReader reader) => reader.ReadBlittable<Vector3>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3? ReadVector3Nullable(this NetworkReader reader) => reader.ReadBlittableNullable<Vector3>();
 
-        public static Vector4 ReadVector4(this NetworkReader reader) => new Vector4(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
-        public static Vector4? ReadVector4Nullable(this NetworkReader reader) => reader.ReadBool() ? ReadVector4(reader) : default(Vector4?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4 ReadVector4(this NetworkReader reader) => reader.ReadBlittable<Vector4>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector4? ReadVector4Nullable(this NetworkReader reader) => reader.ReadBlittableNullable<Vector4>();
 
-        public static Vector2Int ReadVector2Int(this NetworkReader reader) => new Vector2Int(reader.ReadInt(), reader.ReadInt());
-        public static Vector2Int? ReadVector2IntNullable(this NetworkReader reader) => reader.ReadBool() ? ReadVector2Int(reader) : default(Vector2Int?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int ReadVector2Int(this NetworkReader reader) => reader.ReadBlittable<Vector2Int>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int? ReadVector2IntNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Vector2Int>();
 
-        public static Vector3Int ReadVector3Int(this NetworkReader reader) => new Vector3Int(reader.ReadInt(), reader.ReadInt(), reader.ReadInt());
-        public static Vector3Int? ReadVector3IntNullable(this NetworkReader reader) => reader.ReadBool() ? ReadVector3Int(reader) : default(Vector3Int?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int ReadVector3Int(this NetworkReader reader) => reader.ReadBlittable<Vector3Int>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int? ReadVector3IntNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Vector3Int>();
 
-        public static Color ReadColor(this NetworkReader reader) => new Color(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
-        public static Color? ReadColorNullable(this NetworkReader reader) => reader.ReadBool() ? new Color(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat()) : default(Color?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Color ReadColor(this NetworkReader reader) => reader.ReadBlittable<Color>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Color? ReadColorNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Color>();
 
-        public static Color32 ReadColor32(this NetworkReader reader) => new Color32(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
-        public static Color32? ReadColor32Nullable(this NetworkReader reader) => reader.ReadBool() ? new Color32(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte()) : default(Color32?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Color32 ReadColor32(this NetworkReader reader) => reader.ReadBlittable<Color32>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Color32? ReadColor32Nullable(this NetworkReader reader) => reader.ReadBlittableNullable<Color32>();
 
-        public static Quaternion ReadQuaternion(this NetworkReader reader) => new Quaternion(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
-        public static Quaternion? ReadQuaternionNullable(this NetworkReader reader) => reader.ReadBool() ? ReadQuaternion(reader) : default(Quaternion?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion ReadQuaternion(this NetworkReader reader) => reader.ReadBlittable<Quaternion>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Quaternion? ReadQuaternionNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Quaternion>();
 
-        public static Rect ReadRect(this NetworkReader reader) => new Rect(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
-        public static Rect? ReadRectNullable(this NetworkReader reader) => reader.ReadBool() ? ReadRect(reader) : default(Rect?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Rect ReadRect(this NetworkReader reader) => reader.ReadBlittable<Rect>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Rect? ReadRectNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Rect>();
 
-        public static Plane ReadPlane(this NetworkReader reader) => new Plane(reader.ReadVector3(), reader.ReadFloat());
-        public static Plane? ReadPlaneNullable(this NetworkReader reader) => reader.ReadBool() ? ReadPlane(reader) : default(Plane?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Plane ReadPlane(this NetworkReader reader) => reader.ReadBlittable<Plane>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Plane? ReadPlaneNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Plane>();
 
-        public static Ray ReadRay(this NetworkReader reader) => new Ray(reader.ReadVector3(), reader.ReadVector3());
-        public static Ray? ReadRayNullable(this NetworkReader reader) => reader.ReadBool() ? ReadRay(reader) : default(Ray?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Ray ReadRay(this NetworkReader reader) => reader.ReadBlittable<Ray>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Ray? ReadRayNullable(this NetworkReader reader) => reader.ReadBlittableNullable<Ray>();
 
-        public static Matrix4x4 ReadMatrix4x4(this NetworkReader reader)
-        {
-            return new Matrix4x4
-            {
-                m00 = reader.ReadFloat(),
-                m01 = reader.ReadFloat(),
-                m02 = reader.ReadFloat(),
-                m03 = reader.ReadFloat(),
-                m10 = reader.ReadFloat(),
-                m11 = reader.ReadFloat(),
-                m12 = reader.ReadFloat(),
-                m13 = reader.ReadFloat(),
-                m20 = reader.ReadFloat(),
-                m21 = reader.ReadFloat(),
-                m22 = reader.ReadFloat(),
-                m23 = reader.ReadFloat(),
-                m30 = reader.ReadFloat(),
-                m31 = reader.ReadFloat(),
-                m32 = reader.ReadFloat(),
-                m33 = reader.ReadFloat()
-            };
-        }
-        public static Matrix4x4? ReadMatrix4x4Nullable(this NetworkReader reader) => reader.ReadBool() ? ReadMatrix4x4(reader) : default(Matrix4x4?);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Matrix4x4 ReadMatrix4x4(this NetworkReader reader)=> reader.ReadBlittable<Matrix4x4>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Matrix4x4? ReadMatrix4x4Nullable(this NetworkReader reader) => reader.ReadBlittableNullable<Matrix4x4>();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid ReadGuid(this NetworkReader reader) => new Guid(reader.ReadBytes(16));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid? ReadGuidNullable(this NetworkReader reader) => reader.ReadBool() ? ReadGuid(reader) : default(Guid?);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NetworkIdentity ReadNetworkIdentity(this NetworkReader reader)
         {
             uint netId = reader.ReadUInt();
@@ -344,6 +424,7 @@ namespace Mirror
             return null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NetworkBehaviour ReadNetworkBehaviour(this NetworkReader reader)
         {
             // reuse ReadNetworkIdentity, get the component at index
@@ -361,11 +442,13 @@ namespace Mirror
             return identity.NetworkBehaviours[componentIndex];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ReadNetworkBehaviour<T>(this NetworkReader reader) where T : NetworkBehaviour
         {
             return reader.ReadNetworkBehaviour() as T;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NetworkBehaviour.NetworkBehaviourSyncVar ReadNetworkBehaviourSyncVar(this NetworkReader reader)
         {
             uint netId = reader.ReadUInt();
@@ -380,6 +463,7 @@ namespace Mirror
             return new NetworkBehaviour.NetworkBehaviourSyncVar(netId, componentIndex);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Transform ReadTransform(this NetworkReader reader)
         {
             // Don't use null propagation here as it could lead to MissingReferenceException
@@ -387,6 +471,7 @@ namespace Mirror
             return networkIdentity != null ? networkIdentity.transform : null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameObject ReadGameObject(this NetworkReader reader)
         {
             // Don't use null propagation here as it could lead to MissingReferenceException
@@ -394,6 +479,7 @@ namespace Mirror
             return networkIdentity != null ? networkIdentity.gameObject : null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<T> ReadList<T>(this NetworkReader reader)
         {
             int length = reader.ReadInt();
@@ -407,6 +493,7 @@ namespace Mirror
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] ReadArray<T>(this NetworkReader reader)
         {
             int length = reader.ReadInt();
@@ -433,12 +520,14 @@ namespace Mirror
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Uri ReadUri(this NetworkReader reader)
         {
             string uriString = reader.ReadString();
             return (string.IsNullOrWhiteSpace(uriString) ? null : new Uri(uriString));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Texture2D ReadTexture2D(this NetworkReader reader)
         {
             Texture2D texture2D = new Texture2D(32, 32);
@@ -447,6 +536,7 @@ namespace Mirror
             return texture2D;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Sprite ReadSprite(this NetworkReader reader)
         {
             return Sprite.Create(reader.ReadTexture2D(), reader.ReadRect(), reader.ReadVector2());
