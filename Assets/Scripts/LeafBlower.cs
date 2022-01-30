@@ -10,6 +10,9 @@ public class LeafBlower : NetworkBehaviour
     [SyncVar(hook = nameof(HandleLeafBlowerEnabled))]
     bool LeafBlowerEnabled = false;
     public int LeafBlowerDistance;
+    public float leafBlowerCooldown;
+    float timeSinceLastBlow;
+
 
     void HandleLeafBlowerEnabled(bool prevEnabled, bool enabled)
     {
@@ -25,10 +28,12 @@ public class LeafBlower : NetworkBehaviour
 
     void Update() 
     {
-        if (isLocalPlayer && Input.GetKeyDown(leafblowerKey))
+        if (isLocalPlayer && Input.GetKeyDown(leafblowerKey) && timeSinceLastBlow > leafBlowerCooldown)
         {
             Debug.Log("Blow Bro Activated!");
             LeafBlowerEnabled = true;
+
+            timeSinceLastBlow = 0.0f;
 
             Vector2 pointingDirection = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
@@ -38,8 +43,20 @@ public class LeafBlower : NetworkBehaviour
             if (rayHit.collider != null && rayHit.rigidbody.gameObject.tag == "Player" && rayHit.rigidbody.gameObject != this.gameObject)
             {
                 Debug.Log("Player Hit!");
-                rayHit.rigidbody.gameObject.GetComponent<PlayerMovement>().GetBlown();
+                NetworkIdentity opponentIdentity = rayHit.rigidbody.gameObject.GetComponent<NetworkIdentity>();
+                BlowOtherPlayer(rayHit.rigidbody.gameObject);
             }
         }
+    }
+
+    void FixedUpdate() {
+        timeSinceLastBlow += Time.fixedDeltaTime;
+    }
+
+    [Command]
+    void BlowOtherPlayer(GameObject target)
+    {
+        NetworkIdentity opponentIdentity = target.GetComponent<NetworkIdentity>();
+        target.GetComponent<PlayerMovement>().GetBlown(opponentIdentity.connectionToClient);
     }
 }
