@@ -20,7 +20,7 @@ GameObject:
   - component: {fileID: -3379910442442701480}
   m_Layer: 0
   m_Name: Dino
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -128,6 +128,7 @@ MonoBehaviour:
   syncInterval: 0.1
   moveSpeed: 5
   rb: {fileID: 1274804794903317072}
+  leafBlowerStrength: 2000000
 --- !u!61 &1274804794903317085
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -219,16 +220,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  LetterColor: {r: 0, g: 0, b: 0, a: 0}
-  space: {fileID: 0}
   letterSprite: {fileID: 3492019731244202095}
-  letterRenderer: {fileID: 0}
   blueDino: {fileID: 9100000, guid: 0d61a86314fbc741292db0bf8178ffcf, type: 2}
   redDino: {fileID: 9100000, guid: ea73bcadf4fbeac35bd8a2932dfc4117, type: 2}
   blueX: {fileID: -4964184822090623332, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   blueO: {fileID: 2152131933643943973, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   redX: {fileID: 2638870717198299584, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
   redO: {fileID: -662986676217712088, guid: f26053ffa2d8a5a47a6f2a9c3bc7a2e6, type: 3}
+  currentLetter: 
   playerIsRed: 0
 --- !u!95 &3735159717317664878
 Animator:
@@ -242,7 +241,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 0}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 1
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
@@ -263,6 +262,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  LeafBlowerDistance: 5
 --- !u!1 &3492019731244202095
 GameObject:
   m_ObjectHideFlags: 0

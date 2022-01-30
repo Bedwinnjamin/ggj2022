@@ -11,6 +11,7 @@ public class PlayerMovement : NetworkBehaviour
     
     private Animator animator;
     private SpriteRenderer sr;
+    public int leafBlowerStrength;
 
     Vector2 movement;
 
@@ -44,5 +45,24 @@ public class PlayerMovement : NetworkBehaviour
     {
         HandleMovement();
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+        Debug.Log(rb.velocity);
+    }
+
+    [TargetRpc]
+    public void GetBlown()
+    {
+        Debug.Log("\"Don't blow me!\"");
+
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject player in players)
+        {
+            if (player != gameObject)
+            {
+                Debug.Log("I'm setting it now");
+                Vector2 direction = gameObject.transform.position - player.transform.position;
+                Debug.Log(direction * leafBlowerStrength);
+                rb.velocity = direction * leafBlowerStrength;
+            }
+        }
     }
 }

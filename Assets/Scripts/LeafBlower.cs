@@ -9,6 +9,7 @@ public class LeafBlower : NetworkBehaviour
     private bool leafBlowerEnabled;
     [SyncVar(hook = nameof(HandleLeafBlowerEnabled))]
     bool LeafBlowerEnabled = false;
+    public int LeafBlowerDistance;
 
     void HandleLeafBlowerEnabled(bool prevEnabled, bool enabled)
     {
@@ -22,15 +23,23 @@ public class LeafBlower : NetworkBehaviour
         }
     }
 
-    void Update()
+    void Update() 
     {
         if (isLocalPlayer && Input.GetKeyDown(leafblowerKey))
         {
-            print("blowing");
+            Debug.Log("Blow Bro Activated!");
             LeafBlowerEnabled = true;
-            // RaycastHit hit;
-            Physics2D.Raycast(transform.position, Vector2.up);
-            Debug.DrawRay(transform.position, Vector2.up, new Color(255, 0, 0), 1f, false);
+
+            Vector2 pointingDirection = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+            RaycastHit2D rayHit = Physics2D.Raycast(transform.position, pointingDirection, 5);
+            Debug.DrawRay(transform.position, pointingDirection * 5, Color.white, 100.0f);
+
+            if (rayHit.collider != null && rayHit.rigidbody.gameObject.tag == "Player" && rayHit.rigidbody.gameObject != this.gameObject)
+            {
+                Debug.Log("Player Hit!");
+                rayHit.rigidbody.gameObject.GetComponent<PlayerMovement>().GetBlown();
+            }
         }
     }
 }
