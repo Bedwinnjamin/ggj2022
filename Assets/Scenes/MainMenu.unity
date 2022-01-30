@@ -1794,7 +1794,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1152773789
 Transform:
   m_ObjectHideFlags: 0
@@ -1803,7 +1803,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1152773788}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 685.4094, y: 332.911, z: -56.901936}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1823,6 +1823,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Audio: {fileID: 1152773791}
   Menu: {fileID: 8300000, guid: 563abff92ef1300d88f8441901fa30be, type: 3}
+  Lobby: {fileID: 8300000, guid: e0a8738c943fcf218b4db24a2c3ef718, type: 3}
   Game: {fileID: 8300000, guid: e99d1a9a74f359162b6ca14dec887922, type: 3}
   EndGame: {fileID: 8300000, guid: e0a8738c943fcf218b4db24a2c3ef718, type: 3}
 --- !u!82 &1152773791
@@ -2153,10 +2154,13 @@ MonoBehaviour:
   Audio: {fileID: 1327529611}
   Click: {fileID: 8300000, guid: 869d08d424ed27096b3369b8decf81a6, type: 3}
   Hover: {fileID: 8300000, guid: 3fab1c60f27fa20c68c79bfd63d45662, type: 3}
-  Spawn: {fileID: 0}
-  Blow: {fileID: 0}
-  Score: {fileID: 0}
-  Place: {fileID: 0}
+  Spawn: {fileID: 8300000, guid: 14eaf4d8eb3ee6371b32c67e46967a84, type: 3}
+  Change: {fileID: 8300000, guid: 9921894af4152e5878b59e092e857b68, type: 3}
+  Walk: {fileID: 8300000, guid: 7b42b7ca101ab8951b03189021598b11, type: 3}
+  Hurt: {fileID: 8300000, guid: a71074953990fc42b8a336499d6ae910, type: 3}
+  Blow: {fileID: 8300000, guid: 9f6d13236f9d02586afadbd2d56b3e51, type: 3}
+  Score: {fileID: 8300000, guid: cb50d358c2e6068759e3831702b7421a, type: 3}
+  Place: {fileID: 8300000, guid: dd55fd2008016f55babc923fd1a743ae, type: 3}
 --- !u!82 &1327529611
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2261,7 +2265,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1327529609}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5371241, y: 0.91567856, z: -37.396996}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
