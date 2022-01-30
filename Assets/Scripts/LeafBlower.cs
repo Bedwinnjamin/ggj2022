@@ -12,6 +12,7 @@ public class LeafBlower : NetworkBehaviour
     public int LeafBlowerDistance;
     public float leafBlowerCooldown;
     float timeSinceLastBlow;
+    private float blowTime = 0;
 
 
     void HandleLeafBlowerEnabled(bool prevEnabled, bool enabled)
@@ -58,5 +59,14 @@ public class LeafBlower : NetworkBehaviour
     {
         NetworkIdentity opponentIdentity = target.GetComponent<NetworkIdentity>();
         target.GetComponent<PlayerMovement>().GetBlown(opponentIdentity.connectionToClient);
+    }
+
+    void playLeafBlow()
+    {
+        if (SfxManager.sfxInstance && (Time.time - blowTime) >= SfxManager.sfxInstance.Blow.length + .08)
+        {
+            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Blow, .6f);
+            blowTime = Time.time;
+        }
     }
 }

@@ -13,6 +13,7 @@ public class PlayerMovement : NetworkBehaviour
     public int leafBlowerStrength;
     Vector2 leafBlowerDelta = Vector3.zero;
     private float footTime = 0;
+    private float hurtTime = 0;
 
     Vector2 movement;
 
@@ -41,7 +42,6 @@ public class PlayerMovement : NetworkBehaviour
             movement.x = Input.GetAxisRaw("Horizontal");
             movement.y = Input.GetAxisRaw("Vertical");
 
-            animator.SetFloat("Speed", movement.sqrMagnitude);
             if (movement.sqrMagnitude > 0)
             {
                 playFootStep();
@@ -60,7 +60,23 @@ public class PlayerMovement : NetworkBehaviour
     void FixedUpdate()
     {
         HandleMovement();
+        HandleAnimation();
+
         rb.MovePosition(rb.position + (movement * moveSpeed * Time.fixedDeltaTime) + leafBlowerDelta);
+    }
+
+    void HandleAnimation()
+    {
+        animator.SetFloat("Speed", movement.sqrMagnitude);
+        if(leafBlowerDelta.sqrMagnitude > 0)
+        {
+            animator.SetBool("Hurt", true);
+            playHurt();
+        }
+        else
+        {
+            animator.SetBool("Hurt", false);
+        }
     }
 
     void playFootStep()
@@ -69,6 +85,15 @@ public class PlayerMovement : NetworkBehaviour
         {
             SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Walk, .6f);
             footTime = Time.time;
+        }
+    }
+
+    void playHurt()
+    {
+        if (SfxManager.sfxInstance && (Time.time - hurtTime) >= SfxManager.sfxInstance.Hurt.length + .08)
+        {
+            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Hurt, .6f);
+            hurtTime = Time.time;
         }
     }
 
