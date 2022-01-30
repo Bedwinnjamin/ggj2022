@@ -8,7 +8,7 @@ public class PlayerMovement : NetworkBehaviour
 
     public float moveSpeed = 5f;
     public Rigidbody2D rb;
-    
+
     private Animator animator;
     private SpriteRenderer sr;
     public int leafBlowerStrength;
@@ -27,16 +27,16 @@ public class PlayerMovement : NetworkBehaviour
         {
             movement.x = Input.GetAxisRaw("Horizontal");
             movement.y = Input.GetAxisRaw("Vertical");
-            
-            
+
+
             animator.SetFloat("Speed", movement.sqrMagnitude);
-            if(movement.x < 0)
+            if (movement.x < 0)
             {
-            	sr.flipX = true;
+                animator.SetBool("Left", true);
             }
-            else
+            else if (movement.x > 0)
             {
-                sr.flipX = false;
+                animator.SetBool("Left", false);
             }
         }
     }

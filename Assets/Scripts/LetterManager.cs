@@ -15,15 +15,24 @@ public class LetterManager : NetworkBehaviour
     public Sprite redX;
     public Sprite redO;
 
-    [SyncVar]
+    [SyncVar(hook = nameof(handleLetterChanged))]
     public string currentLetter;
+    [Command]
+    void handleLetterChanged(string old, string value)
+    {
+        SwitchSprite();
+    }
+    void setCurrentLetter(string value)
+    {
+        currentLetter = value;
+    }
 
     [SyncVar]
     public bool playerIsRed;
 
     private static string[] possibleLetters = { "X", "O" };
 
-    void Start()
+    public override void OnStartClient()
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
 
@@ -31,25 +40,26 @@ public class LetterManager : NetworkBehaviour
 
         if (playerIsRed)
         {
-            playerIsRed = true;
             animator.runtimeAnimatorController = redDino as RuntimeAnimatorController;
         }
         else
         {
-            playerIsRed = false;
             animator.runtimeAnimatorController = blueDino as RuntimeAnimatorController;
         }
 
-        currentLetter = possibleLetters[Random.Range(0, 2)];
-        Debug.Log(currentLetter);
+        // var netAnimator = this.GetComponent<NetworkAnimator>();
+        // netAnimator.animator = animator;
+
+        if (isLocalPlayer)
+        {
+            setCurrentLetter(possibleLetters[Random.Range(0, 2)]);
+        }
         SwitchSprite();
     }
 
     void SwitchLetter()
     {
-        currentLetter = (currentLetter == "X") ? "O" : "X";
-        Debug.Log(currentLetter);
-        SwitchSprite();
+        setCurrentLetter((currentLetter == "X") ? "O" : "X");
     }
 
     void SwitchSprite()
