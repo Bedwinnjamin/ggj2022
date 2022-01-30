@@ -5,7 +5,6 @@ using Mirror;
 
 public class LeafBlower : NetworkBehaviour
 {
-    string leafblowerKey = "r";
     private bool leafBlowerEnabled;
     [SyncVar(hook = nameof(HandleLeafBlowerEnabled))]
     bool LeafBlowerEnabled = false;
@@ -29,7 +28,7 @@ public class LeafBlower : NetworkBehaviour
 
     void Update() 
     {
-        if (isLocalPlayer && Input.GetKeyDown(leafblowerKey) && timeSinceLastBlow > leafBlowerCooldown)
+        if (isLocalPlayer && Input.GetKeyDown(KeyCode.LeftShift) && timeSinceLastBlow > leafBlowerCooldown)
         {
             Debug.Log("Blow Bro Activated!");
             LeafBlowerEnabled = true;

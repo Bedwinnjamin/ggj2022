@@ -99,7 +99,7 @@ public class Player : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            if (Input.GetKeyDown("f") && space != null)
+            if (Input.GetKeyDown("space") && space != null)
             {
                 if (space.GetComponent<SpaceScript>().isFree)
                 {
