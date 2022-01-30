@@ -67,15 +67,18 @@ public class PlayerMovement : NetworkBehaviour
 
     void HandleAnimation()
     {
-        animator.SetFloat("Speed", movement.sqrMagnitude);
-        if(leafBlowerDelta.sqrMagnitude > 0)
+        if (isLocalPlayer)
         {
-            animator.SetBool("Hurt", true);
-            playHurt();
-        }
-        else
-        {
-            animator.SetBool("Hurt", false);
+            animator.SetFloat("Speed", movement.sqrMagnitude);
+            if(leafBlowerDelta.sqrMagnitude > 0)
+            {
+                animator.SetBool("Hurt", true);
+                playHurt();
+            }
+            else
+            {
+                animator.SetBool("Hurt", false);
+            }
         }
     }
 
