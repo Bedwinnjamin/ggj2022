@@ -79,7 +79,7 @@ MonoBehaviour:
   syncInterval: 0.1
   moveSpeed: 5
   rb: {fileID: 1274804794903317072}
-  leafBlowerStrength: 5
+  leafBlowerStrength: 7
 --- !u!61 &1274804794903317085
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -281,7 +281,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   LeafBlowerDistance: 5
-  leafBlowerCooldown: 0
+  leafBlowerCooldown: 2
 --- !u!1 &3492019731244202095
 GameObject:
   m_ObjectHideFlags: 0
