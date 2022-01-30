@@ -12,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
     private Animator animator;
     private SpriteRenderer sr;
     public int leafBlowerStrength;
+    private float footTime = 0;
 
     Vector2 movement;
 
@@ -41,6 +42,10 @@ public class PlayerMovement : NetworkBehaviour
             movement.y = Input.GetAxisRaw("Vertical");
 
             animator.SetFloat("Speed", movement.sqrMagnitude);
+            if(movement.sqrMagnitude > 0)
+            {
+                playFootStep();
+            }
             if (movement.x < 0)
             {
                 SetIsLeft(true);
@@ -56,6 +61,15 @@ public class PlayerMovement : NetworkBehaviour
     {
         HandleMovement();
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+    }
+
+    void playFootStep()
+    {
+        if((Time.time - footTime) >= SfxManager.sfxInstance.Walk.length+.08)
+        {
+            SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Walk, .6f);
+            footTime = Time.time;
+        }
     }
 
     [TargetRpc]

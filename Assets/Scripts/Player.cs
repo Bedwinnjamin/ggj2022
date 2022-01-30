@@ -57,6 +57,8 @@ public class Player : NetworkBehaviour
     void SwitchLetter()
     {
         setCurrentLetter((currentLetter == "X") ? "O" : "X");
+
+        SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Change, .7f);
     }
 
     void SwitchSprite()

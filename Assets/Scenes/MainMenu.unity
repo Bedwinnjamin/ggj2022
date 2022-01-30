@@ -1794,7 +1794,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1152773789
 Transform:
   m_ObjectHideFlags: 0
@@ -2155,6 +2155,7 @@ MonoBehaviour:
   Click: {fileID: 8300000, guid: 869d08d424ed27096b3369b8decf81a6, type: 3}
   Hover: {fileID: 8300000, guid: 3fab1c60f27fa20c68c79bfd63d45662, type: 3}
   Spawn: {fileID: 8300000, guid: 14eaf4d8eb3ee6371b32c67e46967a84, type: 3}
+  Change: {fileID: 8300000, guid: 9921894af4152e5878b59e092e857b68, type: 3}
   Walk: {fileID: 8300000, guid: 7b42b7ca101ab8951b03189021598b11, type: 3}
   Hurt: {fileID: 8300000, guid: a71074953990fc42b8a336499d6ae910, type: 3}
   Blow: {fileID: 8300000, guid: 9f6d13236f9d02586afadbd2d56b3e51, type: 3}

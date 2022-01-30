@@ -10,6 +10,7 @@ public class SfxManager : MonoBehaviour
     public AudioClip Hover;
 
     public AudioClip Spawn;
+    public AudioClip Change;
     public AudioClip Walk;
     public AudioClip Hurt;
     public AudioClip Blow;
