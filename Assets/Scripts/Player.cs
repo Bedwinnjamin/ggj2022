@@ -60,7 +60,7 @@ public class Player : NetworkBehaviour
         transform.position = position;
     }
 
-    void SwitchLetter()
+    public void SwitchLetter()
     {
         setCurrentLetter((currentLetter == "X") ? "O" : "X");
 
@@ -98,10 +98,6 @@ public class Player : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            if (Input.GetKeyDown("space"))
-            {
-                SwitchLetter();
-            }
             if (Input.GetKeyDown("f") && space != null)
             {
                 if (space.GetComponent<SpaceScript>().isFree)
