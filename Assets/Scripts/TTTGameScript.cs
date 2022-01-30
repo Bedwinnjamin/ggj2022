@@ -53,10 +53,13 @@ public class TTTGameScript : NetworkBehaviour
     {
         tttBoard[flattenCoords(x, y)] = marking;
 
-        CheckForWin();
+        if (CheckForWin())
+        {
+            ResetGame();
+        }
     }
 
-    void CheckForWin()
+    bool CheckForWin()
     {
         //TODO: Actually serve the win
 
@@ -65,8 +68,7 @@ public class TTTGameScript : NetworkBehaviour
         {
             if (tttBoard[flattenCoords(i, 0)] == tttBoard[flattenCoords(i, 1)] && tttBoard[flattenCoords(i, 1)] == tttBoard[flattenCoords(i, 2)] && tttBoard[flattenCoords(i, 0)] != 0)
             {
-                Debug.Log(tttBoard[flattenCoords(i, 0)] + "Wins!");
-                ResetGame();
+                return true;
             }
         }
 
@@ -75,22 +77,20 @@ public class TTTGameScript : NetworkBehaviour
         {
             if (tttBoard[flattenCoords(0, i)] == tttBoard[flattenCoords(1, i)] && tttBoard[flattenCoords(1, i)] == tttBoard[flattenCoords(2, i)] && tttBoard[flattenCoords(0, i)] != 0)
             {
-                Debug.Log(tttBoard[flattenCoords(0, i)] + "Wins!");
-                ResetGame();
+                return true;
             }
         }
 
         //Diagonal Wins
         if (tttBoard[flattenCoords(0, 0)] == tttBoard[flattenCoords(1, 1)] && tttBoard[flattenCoords(1, 1)] == tttBoard[flattenCoords(2, 2)] && tttBoard[flattenCoords(0, 0)] != 0)
         {
-            Debug.Log(tttBoard[flattenCoords(0, 0)] + "Wins!");
-            ResetGame();
+            return true;
         }
         else if (tttBoard[flattenCoords(0, 2)] == tttBoard[flattenCoords(1, 1)] && tttBoard[flattenCoords(1, 1)] == tttBoard[flattenCoords(2, 0)] && tttBoard[flattenCoords(0, 2)] != 0)
         {
-            Debug.Log(tttBoard[flattenCoords(0, 2)] + "Wins!");
-            ResetGame();
+            return true;
         }
+        return false;
     }
 
     bool CheckForDraw()
