@@ -8,10 +8,10 @@ public class PlayerMovement : NetworkBehaviour
 
     public float moveSpeed = 5f;
     public Rigidbody2D rb;
-
     private Animator animator;
     private SpriteRenderer sr;
     public int leafBlowerStrength;
+    Vector2 leafBlowerDelta = Vector3.zero;
     private float footTime = 0;
 
     Vector2 movement;
@@ -60,7 +60,7 @@ public class PlayerMovement : NetworkBehaviour
     void FixedUpdate()
     {
         HandleMovement();
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + (movement * moveSpeed * Time.fixedDeltaTime) + leafBlowerDelta);
     }
 
     void playFootStep()
@@ -73,7 +73,7 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void GetBlown()
+    public void GetBlown(NetworkConnection conn)
     {
         Debug.Log("\"Don't blow me!\"");
 
@@ -85,8 +85,18 @@ public class PlayerMovement : NetworkBehaviour
                 Debug.Log("I'm setting it now");
                 Vector2 direction = gameObject.transform.position - player.transform.position;
                 Debug.Log(direction * leafBlowerStrength);
-                rb.velocity = direction * leafBlowerStrength;
+                StartCoroutine(setLeafBlowerDelta(direction * leafBlowerStrength / 100));
             }
         }
+    }
+
+    IEnumerator setLeafBlowerDelta(Vector2 lbDir)
+    {
+        leafBlowerDelta = lbDir;
+        Debug.Log(leafBlowerDelta);
+
+        yield return new WaitForSeconds(1);
+
+        leafBlowerDelta = Vector2.zero;
     }
 }
