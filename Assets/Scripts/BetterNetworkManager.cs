@@ -5,7 +5,8 @@ using Mirror;
 
 public class BetterNetworkManager : NetworkManager
 {
-    public int playersAdded = 0;
+    private int playersAdded = 0;
+    private int startPosIndex = 0;
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
@@ -15,6 +16,9 @@ public class BetterNetworkManager : NetworkManager
         lm.playerIsRed = playersAdded > 1;
         Animator animator = this.GetComponent<Animator>();
         print($"new client, we now have {playersAdded} players");
+        print(conn.connectionId);
+        gameObject.transform.position = NetworkManager.startPositions[startPosIndex].position;
+        startPosIndex = (startPosIndex + 1) % 2;
         NetworkServer.AddPlayerForConnection(conn, gameObject);
     }
 }

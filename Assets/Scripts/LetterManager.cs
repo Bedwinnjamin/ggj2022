@@ -17,11 +17,11 @@ public class LetterManager : NetworkBehaviour
 
     [SyncVar(hook = nameof(handleLetterChanged))]
     public string currentLetter;
-    [Command]
     void handleLetterChanged(string old, string value)
     {
         SwitchSprite();
     }
+    [Command]
     void setCurrentLetter(string value)
     {
         currentLetter = value;
