@@ -7,9 +7,8 @@ public class MusManager : MonoBehaviour
 
     public AudioSource Audio;
     public AudioClip Menu;
-
+    public AudioClip Lobby;
     public AudioClip Game;
-
     public AudioClip EndGame;
 
     public static MusManager musInstance;
