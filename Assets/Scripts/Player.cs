@@ -58,6 +58,7 @@ public class Player : NetworkBehaviour
     public void Respawn(Vector3 position)
     {
         transform.position = position;
+        setCurrentLetter(possibleLetters[Random.Range(0, 2)]);
     }
 
     public void SwitchLetter()
