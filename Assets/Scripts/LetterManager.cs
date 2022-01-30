@@ -26,17 +26,15 @@ public class LetterManager : NetworkBehaviour
 
     private string currentLetter;
 
-    public int insideSquareCount;
-
     private static string[] possibleLetters = { "X", "O" };
 
     // Start is called before the first frame update
     void Start()
     {
         letterRenderer = letterSprite.GetComponent<SpriteRenderer>();
-        
+
         Animator animator = this.GetComponent<Animator>();
-        animator.runtimeAnimatorController = redDino as RuntimeAnimatorController; 
+        animator.runtimeAnimatorController = redDino as RuntimeAnimatorController;
 
         //textMesh.color = LetterColor;
         currentLetter = possibleLetters[Random.Range(0, 2)];
@@ -87,7 +85,7 @@ public class LetterManager : NetworkBehaviour
             {
                 SwitchLetter();
             }
-            if (Input.GetKeyDown("f") && insideSquareCount > 0)
+            if (Input.GetKeyDown("f") && space != null)
             {
                 if (space.GetComponent<SpaceScript>().isFree())
                 {
@@ -114,7 +112,6 @@ public class LetterManager : NetworkBehaviour
         if (other.tag == "space")
         {
             space = other.gameObject;
-            insideSquareCount++;
 
             //TODO: Highlight the square that you are occupying
             //TODO: Remove your highlight from other squares
@@ -123,11 +120,11 @@ public class LetterManager : NetworkBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (other.tag == "space")
+        if (other.gameObject == space)
         {
             //textMesh.color = originalColor;
             Debug.Log("Leaving Square");
-            insideSquareCount--;
+            space = null;
         }
     }
 }
