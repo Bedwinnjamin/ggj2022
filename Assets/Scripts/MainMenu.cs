@@ -5,11 +5,14 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    
+
     void Start()
     {
-        MusManager.musInstance.Audio.clip = MusManager.musInstance.Menu;
-        MusManager.musInstance.Audio.Play();
+        if(MusManager.musInstance)
+        {
+            MusManager.musInstance.Audio.clip = MusManager.musInstance.Menu;
+            MusManager.musInstance.Audio.Play();
+        }
     }
 
     public void PlayGame()
