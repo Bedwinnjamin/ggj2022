@@ -42,7 +42,7 @@ public class PlayerMovement : NetworkBehaviour
             movement.y = Input.GetAxisRaw("Vertical");
 
             animator.SetFloat("Speed", movement.sqrMagnitude);
-            if(movement.sqrMagnitude > 0)
+            if (movement.sqrMagnitude > 0)
             {
                 playFootStep();
             }
@@ -65,7 +65,7 @@ public class PlayerMovement : NetworkBehaviour
 
     void playFootStep()
     {
-        if((Time.time - footTime) >= SfxManager.sfxInstance.Walk.length+.08)
+        if (SfxManager.sfxInstance && (Time.time - footTime) >= SfxManager.sfxInstance.Walk.length + .08)
         {
             SfxManager.sfxInstance.Audio.PlayOneShot(SfxManager.sfxInstance.Walk, .6f);
             footTime = Time.time;
